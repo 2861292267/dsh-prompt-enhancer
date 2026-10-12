@@ -1,0 +1,7 @@
+# Normalize to LF in the repository so the sources are identical on every platform.
+* text=auto eol=lf
+
+# Binary assets, if any are added later.
+*.png binary
+*.jpg binary
+*.ico binary
