@@ -3,6 +3,30 @@
 本项目记录了两轮质量审查加一次用户反馈后修复的 13 个真实缺陷。其中若干属于
 "代码和测试犯同一个错，所以一直全绿"的类型，保留细节是为了避免后人重走。
 
+## [1.4.2] - 2026-10-13
+
+### 修复：profile 覆盖层配置被误删（人为事故）
+
+**这是维护过程中造成的事故，不是代码缺陷，如实记录。**
+
+上一版修 `cordis.patch.yml` 的编码乱码时，改写了 profile 的
+`cordis.patch.yml`，把 `- id: prompt-enhancer` 段里的
+`provider` / `model` / `styles` 一起删掉了，只剩 `defaultStyle` 与
+`slashCommand`。表现就是使用者看到的「配置都没了」。
+
+已恢复该段，并加了防呆约定：
+
+- **改 profile 的 patch 只动 `- id:` 那一行以下的 `config:` 块**，
+  不要整段重写；改前先备份。
+- **自定义风格只由设置面板管理**（它写用户配置文件，优先级高于 patch）。
+  patch 里不再重复声明 `styles`，避免两处互相覆盖、看起来像"配置丢了"。
+
+### 修复：依赖退回 `link:`
+
+profile 依赖一度变回 `link:`，市场对它的报告是
+`source: "linked", latestVersion: null` —— 没有可更新的对象。
+已改回 `github:2861292267/dsh-prompt-forge#main`，
+lockfile 指向 `codeload.github.com`，远程更新恢复可用。
 ## [1.4.1] - 2026-10-13
 
 ### 修复：`cordis.patch.yml` 里的自定义风格被静默丢弃

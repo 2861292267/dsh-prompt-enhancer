@@ -2,7 +2,7 @@
   "name": "@local/dsh-prompt-forge",
   "displayName": "DSH Prompt Enhancer",
   "description": "Bring WorkBuddy's 增强提示词 (Enhance Prompt) button to DeepSeek Harness: rewrite the composer draft into a stronger, better-structured prompt with one click, with a /enhance slash command for the keyboard path.",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": true,
   "license": "MIT",
   "type": "module",
