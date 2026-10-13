@@ -10,11 +10,12 @@
  * patch）。断言直接对着它就会随用户操作变红——所以这里把用户配置**临时移开**，
  * 测完还原，让本测试对着受控输入跑。
  */
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, unlinkSync, renameSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import path from 'node:path'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const PATCH = join(homedir(), '.dsh', 'profiles', 'desktop', 'cordis.patch.yml')
@@ -26,16 +27,43 @@ if (!existsSync(PATCH)) {
   process.exit(0)
 }
 
-// 把用户配置移开，保证断言不受它的影响；无论成败都还原。
-const savedUserConfig = existsSync(USER_CONFIG) ? readFileSync(USER_CONFIG, 'utf8') : null
-if (savedUserConfig !== null) unlinkSync(USER_CONFIG)
-const restoreUserConfig = () => {
-  try {
-    if (savedUserConfig === null) { if (existsSync(USER_CONFIG)) unlinkSync(USER_CONFIG) }
-    else writeFileSync(USER_CONFIG, savedUserConfig, 'utf8')
-  } catch { /* 还原失败也不该让测试崩 */ }
+/**
+ * Isolate the user config: move it aside for the duration, restore it after.
+ *
+ * Restoring only on `exit` is not enough — a suite that dies on a signal never
+ * runs the handler, and a sibling suite (`config-store.mjs`) touches the same
+ * file. That combination produced an intermittent two-assertion failure: this
+ * suite read the config while the other had it temporarily removed.
+ *
+ * So the marker is a real file, and a stale marker (left by a killed run) is
+ * cleaned up on sight rather than trusted.
+ */
+const STASH = path.join(homedir(), '.dsh', 'dsh-prompt-forge.config.json.e2e-stash')
+
+function stashUserConfig() {
+  // A leftover stash means a previous run was killed before restoring.
+  if (existsSync(STASH)) {
+    if (!existsSync(USER_CONFIG)) writeFileSync(USER_CONFIG, readFileSync(STASH, 'utf8'), 'utf8')
+    unlinkSync(STASH)
+  }
+  if (!existsSync(USER_CONFIG)) return
+  renameSync(USER_CONFIG, STASH)
 }
-process.on('exit', restoreUserConfig)
+
+function popUserConfig() {
+  try {
+    if (existsSync(STASH)) {
+      if (!existsSync(USER_CONFIG)) renameSync(STASH, USER_CONFIG)
+      else unlinkSync(STASH)   // someone recreated it; theirs wins
+    }
+  } catch { /* restoring must never fail the suite */ }
+}
+
+stashUserConfig()
+process.on('exit', popUserConfig)
+for (const sig of ['SIGINT', 'SIGTERM']) {
+  process.on(sig, () => { popUserConfig(); process.exit(130) })
+}
 
 const mod = await import(new URL('../lib/index.js', import.meta.url).href)
 
