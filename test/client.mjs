@@ -87,14 +87,28 @@ const ctx = {
 mod.apply(ctx)
 // `conversation.input.right` is rendered before `conversation.input.model`,
 // which is what puts the control on the LEFT of the model picker.
-check('injected into exactly one slot', injections, ['conversation.input.right'])
-check('registered one component', registrations.length, 1)
-check('slot name', registrations[0].spec.name, 'conversation.input.right')
-check('has a stable id', registrations[0].spec.id, 'prompt-enhancer')
+// The settings panel is a second, independent surface.
+check('injected into exactly the two expected slots', injections,
+  ['conversation.input.right', 'settings.section'])
+check('registered two components', registrations.length, 2)
+
+const composer = registrations.find((r) => r.spec.name === 'conversation.input.right')
+const panel = registrations.find((r) => r.spec.name === 'settings.section')
+check('composer slot present', Boolean(composer), true)
+check('composer has a stable id', composer.spec.id, 'prompt-enhancer')
 check('does not target the activity slot', injections.includes('conversation.input.activity'), false)
-check('component is a function', typeof registrations[0].component, 'function')
+check('composer component is a function', typeof composer.component, 'function')
+
+check('settings slot present', Boolean(panel), true)
+check('settings has a stable id', panel.spec.id, 'prompt-forge')
+check('settings label is a function', typeof panel.spec.label, 'function')
+check('settings label resolves to a string', typeof panel.spec.label(), 'string')
+check('settings order is a number', typeof panel.spec.order, 'number')
+check('settings component is a function', typeof panel.component, 'function')
+
 check('styles installed', typeof styleInjected, 'string')
 check('styles target the control', styleInjected.includes('dsh-prompt-forge-button'), true)
+check('styles cover the settings panel', styleInjected.includes('dsh-forge-settings'), true)
 
 console.log('\n== apply survives a hostile ctx ==')
 let threw = false
@@ -205,7 +219,9 @@ console.log('\n== a click writes the enhanced text back ==')
   }
   const srcModule = registered.factory(globalThis.require)
   srcModule.apply(ctx2)
-  const Component = registrations[registrations.length - 1].component
+  // Select by slot name, not by position: the plugin now registers two
+  // surfaces, and which one lands last is an implementation detail.
+  const Component = registrations.find((r) => r.spec.name === 'conversation.input.right').component
 
   // Build the element, then invoke its onClick directly. `findButton` because the
   // component now returns a group (style selector + button).
