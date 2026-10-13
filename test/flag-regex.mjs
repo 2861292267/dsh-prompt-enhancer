@@ -21,8 +21,10 @@ console.log('从源码解析出的 STYLES:', JSON.stringify(keys))
 check('STYLES 含 4 项', keys.length, 4)
 check('含 default', keys.includes('default'), true)
 
-// 正则确实由 STYLES 派生（而不是又写死一份）
-check('正则由 STYLES 派生', /new RegExp\('\^--\(' \+ STYLES\.join\('\|'\)/.test(SRC), true)
+// 正则必须由「生效的风格表」派生，而不是又写死一份。
+// 注意来源已从 STYLES（仅内置）改为 config.styles.ids（内置 + 用户自定义），
+// 这样用户新增的风格也能在 /enhance 上用。
+check('正则由生效风格表派生', /new RegExp\('\^--\(' \+ styleList \+ '\)/.test(SRC), true)
 check('不再有写死的三风格正则', /\^--\(expand\|concise\|structured\)/.test(SRC), false)
 
 // 用派生方式重建正则，验证 4 种风格全部匹配、未知 flag 不匹配
