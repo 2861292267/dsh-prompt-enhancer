@@ -60,7 +60,7 @@ fakeMarket({ badSchema: true })
 }
 
 console.log('\n== 3. link 安装（本机常见）==')
-fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'linked', installedVersion: '1.1.0', latestVersion: null, updateAvailable: false } })
+fakeMarket({ pkg: { name: '@local/dsh-prompt-forge', source: 'linked', installedVersion: '1.1.0', latestVersion: null, updateAvailable: false } })
 {
   const r = await mod.checkForUpdate('http://127.0.0.1:19387')
   check('识别为 linked', r.kind, 'linked')
@@ -70,7 +70,7 @@ fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'linked', instal
 }
 
 console.log('\n== 4. github 源且已是最新 ==')
-fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'github', installedVersion: '1.1.0', latestVersion: 'abc1234', updateAvailable: false } })
+fakeMarket({ pkg: { name: '@local/dsh-prompt-forge', source: 'github', installedVersion: '1.1.0', latestVersion: 'abc1234', updateAvailable: false } })
 {
   const r = await mod.checkForUpdate('http://127.0.0.1:19387')
   check('识别为 current', r.kind, 'current')
@@ -79,7 +79,7 @@ fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'github', instal
 }
 
 console.log('\n== 5. 有新版本 ==')
-fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'npm', installedVersion: '1.1.0', latestVersion: '1.2.0', updateAvailable: true } })
+fakeMarket({ pkg: { name: '@local/dsh-prompt-forge', source: 'npm', installedVersion: '1.1.0', latestVersion: '1.2.0', updateAvailable: true } })
 {
   const r = await mod.checkForUpdate('http://127.0.0.1:19387')
   check('识别为 available', r.kind, 'available')
@@ -90,13 +90,13 @@ fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'npm', installed
 console.log('\n== 6. 重启能力必须如实透传 ==')
 fakeMarket({
   caps: { ...CAPS, restart: { supported: true, managedBy: 'self' } },
-  pkg: { name: '@local/dsh-prompt-enhancer', source: 'npm', installedVersion: '1.1.0', latestVersion: '1.2.0', updateAvailable: true },
+  pkg: { name: '@local/dsh-prompt-forge', source: 'npm', installedVersion: '1.1.0', latestVersion: '1.2.0', updateAvailable: true },
 })
 {
   const r = await mod.checkForUpdate('http://127.0.0.1:19387')
   check('restart.supported=true 被透传', r.restartSupported, true)
 }
-fakeMarket({ pkg: { name: '@local/dsh-prompt-enhancer', source: 'npm', installedVersion: '1.1.0', latestVersion: '1.2.0', updateAvailable: true } })
+fakeMarket({ pkg: { name: '@local/dsh-prompt-forge', source: 'npm', installedVersion: '1.1.0', latestVersion: '1.2.0', updateAvailable: true } })
 {
   const r = await mod.checkForUpdate('http://127.0.0.1:19387')
   check('Desktop 托管时 restart.supported=false', r.restartSupported, false)

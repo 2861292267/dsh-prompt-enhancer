@@ -291,8 +291,8 @@ console.log('\n== 5. i18n ==')
     },
   }
   mod.apply(fakeCtx)
-  check('注册了 locale 命名空间', registeredNs, ['dsh-prompt-enhancer'])
-  check('绑定了同一命名空间', bound, 'dsh-prompt-enhancer')
+  check('注册了 locale 命名空间', registeredNs, ['dsh-prompt-forge'])
+  check('绑定了同一命名空间', bound, 'dsh-prompt-forge')
 
   // locale.register 抛错时也必须继续挂载
   let mountThrew = false

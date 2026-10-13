@@ -50,7 +50,7 @@
 
 ### 新增（远程更新）
 
-- **更新检查**：新增 `GET /plugins/dsh-prompt-enhancer/update`，
+- **更新检查**：新增 `GET /plugins/dsh-prompt-forge/update`，
   经 `dshmarket` 的公开更新 API（`dsh-market/update-api/v1`）查询本插件版本。
   结果都是可解释状态而非异常：
   `available` / `current` / `linked` / `unavailable` / `unknown`。

@@ -1,7 +1,7 @@
 # 插件更新机制（完整流程）
 
 > 版本：v1.2.1 起支持
-> 适用：`@local/dsh-prompt-enhancer`
+> 适用：`@local/dsh-prompt-forge`
 
 本插件把更新交给宿主已装的 **`dshmarket`** 处理，自己不实现安装逻辑。
 本文档说明**为什么这样设计**、**用户怎么更新**、**作者怎么发版**、以及**每一环怎么验证**。
@@ -43,7 +43,7 @@
 仓库自带迁移脚本，**默认预演，不改任何东西**：
 
 ```powershell
-cd "D:\DeepSeek Harness工作区\插件推荐\dsh-prompt-enhancer"
+cd "D:\DeepSeek Harness工作区\插件推荐\dsh-prompt-forge"
 node tools/switch-to-github.mjs            # 只看计划
 node tools/switch-to-github.mjs --apply    # 执行（自动备份 package.json）
 ```
@@ -59,19 +59,19 @@ pnpm install
 
 ```powershell
 # pnpm-lock.yaml 里应出现 codeload.github.com，而不是 link:
-node -e "const t=require('fs').readFileSync('pnpm-lock.yaml','utf8');const i=t.indexOf('dsh-prompt-enhancer');console.log(t.slice(i,i+200))"
+node -e "const t=require('fs').readFileSync('pnpm-lock.yaml','utf8');const i=t.indexOf('dsh-prompt-forge');console.log(t.slice(i,i+200))"
 ```
 
 正确输出形如：
 
 ```yaml
-'@local/dsh-prompt-enhancer':
-  specifier: github:2861292267/dsh-prompt-enhancer#main
-  version: https://codeload.github.com/2861292267/dsh-prompt-enhancer/tar.gz/<commit>
+'@local/dsh-prompt-forge':
+  specifier: github:2861292267/dsh-prompt-forge#main
+  version: https://codeload.github.com/2861292267/dsh-prompt-forge/tar.gz/<commit>
 ```
 
 > ⚠️ `pnpm install` 的输出里可能出现
-> `@local/dsh-prompt-enhancer is linked to C:\...\node_modules from D:\...`。
+> `@local/dsh-prompt-forge is linked to C:\...\node_modules from D:\...`。
 > 那是 pnpm 在描述"把包装到 node_modules 的哪个位置"，
 > **不代表依赖仍是 link**。判据只看 lockfile 的 `version:` 字段。
 
@@ -148,10 +148,10 @@ $base = "http://127.0.0.1:19387"
 curl.exe -s "$base/dsh-market/api/v1/capabilities"
 
 # 2) 本插件的更新状态（UI 的数据源）
-curl.exe -s "$base/plugins/dsh-prompt-enhancer/update"
+curl.exe -s "$base/plugins/dsh-prompt-forge/update"
 
 # 3) 绕过缓存强制检查
-curl.exe -s "$base/dsh-market/api/v1/updates?name=%40local%2Fdsh-prompt-enhancer&force=1"
+curl.exe -s "$base/dsh-market/api/v1/updates?name=%40local%2Fdsh-prompt-forge&force=1"
 
 # 4) 市场汇总里本插件是否在可更新列表
 curl.exe -s "$base/dsh-market/api/v1/updates/summary"
@@ -186,10 +186,10 @@ curl.exe -s "$base/dsh-market/api/v1/updates/summary"
 
 ```powershell
 # 本地装的 commit
-node -e "const t=require('fs').readFileSync(process.env.USERPROFILE+'/.dsh/profiles/desktop/pnpm-lock.yaml','utf8');const m=/dsh-prompt-enhancer[\s\S]{0,200}?tar\.gz\/([a-f0-9]+)/.exec(t);console.log('installed:',m&&m[1])"
+node -e "const t=require('fs').readFileSync(process.env.USERPROFILE+'/.dsh/profiles/desktop/pnpm-lock.yaml','utf8');const m=/dsh-prompt-forge[\s\S]{0,200}?tar\.gz\/([a-f0-9]+)/.exec(t);console.log('installed:',m&&m[1])"
 
 # 远端 HEAD
-git ls-remote --heads https://github.com/2861292267/dsh-prompt-enhancer.git
+git ls-remote --heads https://github.com/2861292267/dsh-prompt-forge.git
 
 # 两者不同时，市场应报 updateAvailable:true
 ```

@@ -66,12 +66,12 @@ function check(label, actual, expected) {
 console.log('== evaluate the bundle ==')
 await import('file:///' + CLIENT)
 check('registered an entry', registered !== null, true)
-check('entry id is the package name', registered && registered.id, '@local/dsh-prompt-enhancer')
+check('entry id is the package name', registered && registered.id, '@local/dsh-prompt-forge')
 check('factory is a function', typeof (registered && registered.factory), 'function')
 
 console.log('\n== instantiate ==')
 const mod = registered.factory(globalThis.require)
-check('exports name', mod.name, 'dsh-prompt-enhancer-client')
+check('exports name', mod.name, 'dsh-prompt-forge-client')
 check('exports inject', Array.isArray(mod.inject) && mod.inject.includes('slots'), true)
 check('exports apply', typeof mod.apply, 'function')
 
@@ -94,7 +94,7 @@ check('has a stable id', registrations[0].spec.id, 'prompt-enhancer')
 check('does not target the activity slot', injections.includes('conversation.input.activity'), false)
 check('component is a function', typeof registrations[0].component, 'function')
 check('styles installed', typeof styleInjected, 'string')
-check('styles target the control', styleInjected.includes('dsh-prompt-enhancer-button'), true)
+check('styles target the control', styleInjected.includes('dsh-prompt-forge-button'), true)
 
 console.log('\n== apply survives a hostile ctx ==')
 let threw = false
@@ -148,7 +148,7 @@ function render(text, overrides = {}) {
 const idle = render('写个爬虫')
 check('renders a button', idle && idle.type, 'button')
 check('mode is idle', idle.props['data-dsh-mode'], 'idle')
-check('carries the plugin marker', idle.props['data-dsh-plugin'], 'dsh-prompt-enhancer')
+check('carries the plugin marker', idle.props['data-dsh-plugin'], 'dsh-prompt-forge')
 check('label is the feature name', idle.props['aria-label'], '增强提示词')
 check('reading { draft } marks it ready', idle.props['data-dsh-ready'], 'true')
 

@@ -1,8 +1,8 @@
-# dsh-prompt-enhancer — bundle layer.
+# dsh-prompt-forge — bundle layer.
 #
 # This is the file `dsh.bundle.patch` in package.json points at. The profile
 # applies it while composing its loader tree, which is why the profile lists
-# `@local/dsh-prompt-enhancer` in `dsh.profile.bundles`.
+# `@local/dsh-prompt-forge` in `dsh.profile.bundles`.
 #
 # `- insert:` is required here and not optional: this layer starts from an empty
 # entry list, so the plugin's row has to be inserted rather than targeted.
@@ -10,7 +10,7 @@
 # `name` is the PACKAGE name, matching every working row in this profile
 # (dsh-rotakit, dsh-mnemon, @nanmicoder/dsh-agent-teams …). The package is
 # resolvable because the profile declares it as
-# `link:D:/DeepSeek Harness工作区/插件推荐/dsh-prompt-enhancer`, which puts it in
+# `link:D:/DeepSeek Harness工作区/插件推荐/dsh-prompt-forge`, which puts it in
 # the profile's node_modules — verified by resolveBundleDir() in the test suite.
 #
 # Config keys (all optional):
@@ -24,7 +24,7 @@
 # guidance appended to its instruction.
 - insert:
     - id: prompt-enhancer
-      name: '@local/dsh-prompt-enhancer'
+      name: '@local/dsh-prompt-forge'
       config:
         provider: workbuddy-xdpool
         model: deepseek-v4.1-flash

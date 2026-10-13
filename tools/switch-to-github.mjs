@@ -7,7 +7,7 @@
  * remote behind it, so "update" has no meaning. A `github:` dependency carries a
  * commit id, which the Market can compare against the branch head.
  *
- * The package NAME stays `@local/dsh-prompt-enhancer`. That is the identity the
+ * The package NAME stays `@local/dsh-prompt-forge`. That is the identity the
  * loader resolves the patch entry against, and changing it would break the
  * profile's `cordis.patch.yml` row.
  *
@@ -19,8 +19,8 @@ import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 
-const PKG = '@local/dsh-prompt-enhancer'
-const REPO = 'github:2861292267/dsh-prompt-enhancer'
+const PKG = '@local/dsh-prompt-forge'
+const REPO = 'github:2861292267/dsh-prompt-forge'
 const PROFILE_DIR = join(homedir(), '.dsh', 'profiles', 'desktop')
 const PKG_JSON = join(PROFILE_DIR, 'package.json')
 const APPLY = process.argv.includes('--apply')
@@ -82,6 +82,6 @@ console.log('')
 console.log('下一步：')
 console.log('  1. 在 profile 目录执行 pnpm install（或让 DSH 重启时自行安装）')
 console.log('  2. 重启 DSH')
-console.log('  3. 访问 /plugins/dsh-prompt-enhancer/update 应返回 kind=current 或 available')
+console.log('  3. 访问 /plugins/dsh-prompt-forge/update 应返回 kind=current 或 available')
 console.log('')
 console.log('回滚：把 package.json.bak-before-github 覆盖回去并重新 pnpm install。')

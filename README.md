@@ -1,4 +1,4 @@
-# dsh-prompt-enhancer
+# dsh-prompt-forge
 
 把 **WorkBuddy 的「增强提示词」** 功能做成 DeepSeek Harness 原生插件。
 
@@ -55,7 +55,7 @@ npm test
 ## 二、位置与结构
 
 ```
-D:\DeepSeek Harness工作区\插件推荐\dsh-prompt-enhancer\
+D:\DeepSeek Harness工作区\插件推荐\dsh-prompt-forge\
 ├── lib\index.js          Host 半：改写引擎 + HTTP 路由 + /enhance 命令
 ├── lib\client.js         浏览器半：模型选择器左侧的增强控件
 ├── package.json          声明 dsh.client 与 exports["./client"]
@@ -81,15 +81,15 @@ WorkBuddy 自己把按钮放在模型**之后**；本插件按要求注册进
 
 | 环节 | 位置 |
 |---|---|
-| 插件实体 | `D:\DeepSeek Harness工作区\插件推荐\dsh-prompt-enhancer` |
-| Junction | `profiles\desktop\node_modules\@local\dsh-prompt-enhancer` → 指向上面那个实体目录 |
+| 插件实体 | `D:\DeepSeek Harness工作区\插件推荐\dsh-prompt-forge` |
+| Junction | `profiles\desktop\node_modules\@local\dsh-prompt-forge` → 指向上面那个实体目录 |
 | bundle 登记 | `profiles\desktop\package.json` 的 `dsh.profile.bundles` |
 | link 依赖 | `profiles\desktop\package.json` 的 `dependencies` 写 `link:<实体路径>` |
 | 挂载声明 | **profile 的 `cordis.patch.yml` + 插件自己的 `cordis.patch.yml`（双份）** |
 
 ### ⚠️ 排障记录：为什么一开始「重启了也没反应」
 
-症状：配置写好、DSH 重启、但 `/plugins/dsh-prompt-enhancer/status` 始终 404，
+症状：配置写好、DSH 重启、但 `/plugins/dsh-prompt-forge/status` 始终 404，
 界面上什么也没多出来。逐层排查后确认了**四个原因**，前三个是配置问题，
 **第四个才是真正致命的那个**。
 
@@ -135,13 +135,13 @@ validate`），仍不加任何依赖。
 **原因二：patch 的 `name` 用了文件路径**
 
 原先插件 patch 里写的是
-`name: 'D:/.../dsh-prompt-enhancer/lib/index.js'`（绝对路径）。
+`name: 'D:/.../dsh-prompt-forge/lib/index.js'`（绝对路径）。
 
 profile 里**所有能正常工作的条目**（`dsh-rotakit`、`dsh-mnemon`、
 `@nanmicoder/dsh-agent-teams` …）用的都是**包名**。文件路径只在
 `--patch` 覆盖层场景是对的写法，bundle 场景下不是。
 
-**修法**：`name` 改回包名 `@local/dsh-prompt-enhancer`——它通过 package.json 的
+**修法**：`name` 改回包名 `@local/dsh-prompt-forge`——它通过 package.json 的
 `link:` 依赖挂在 node_modules 下，loader 能解析。
 
 **原因三：patch 分层语义搞反了**
@@ -185,10 +185,10 @@ webServer service unavailable; HTTP routes not mounted    ← 路由根本没挂
 ```jsonc
 // profiles\desktop\package.json
 "dependencies": {
-  "@local/dsh-prompt-enhancer": "link:D:/DeepSeek Harness工作区/插件推荐/dsh-prompt-enhancer"
+  "@local/dsh-prompt-forge": "link:D:/DeepSeek Harness工作区/插件推荐/dsh-prompt-forge"
 },
 "dsh": { "profile": { "bundles": [
-  "@local/dsh-prompt-enhancer"
+  "@local/dsh-prompt-forge"
 ] } }
 ```
 
@@ -312,7 +312,7 @@ ctx.llm.stream({
 
 ```js
 window.__ModuleLoader__.load({
-  id: '@local/dsh-prompt-enhancer',   // 必须与包名一致
+  id: '@local/dsh-prompt-forge',   // 必须与包名一致
   factory: (require) => { /* ... */ return module.exports },
 })
 ```
@@ -385,7 +385,7 @@ node _test_mounting.mjs
 插件路由无需 GUI 鉴权，可直接探测：
 
 ```powershell
-curl.exe -s http://127.0.0.1:19387/plugins/dsh-prompt-enhancer/status
+curl.exe -s http://127.0.0.1:19387/plugins/dsh-prompt-forge/status
 ```
 
 加载成功返回：
