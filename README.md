@@ -1,4 +1,4 @@
-﻿# dsh-prompt-enhancer
+# dsh-prompt-enhancer
 
 把 **WorkBuddy 的「增强提示词」** 功能做成 DeepSeek Harness 原生插件。
 
@@ -22,6 +22,35 @@
 | **预设风格** | `default` 原版行为（默认）、`expand` 扩充、`concise` 精简、`structured` 工程简报 |
 | **斜杠命令** | `/enhance [--concise\|--structured] <草稿>`，键盘直达同一引擎 |
 | **安全护栏** | 空草稿不调用模型；改写期间你若继续打字，结果自动丢弃，绝不覆盖新内容 |
+| **撤销作用域** | 「恢复原文」只在草稿仍是改写结果时可用；你一旦改动、或发送清空了输入框，它自动失效——避免用旧原文覆盖你新写的内容 |
+| **更新提醒** | 以 `github:` 安装时，有新版本会在按钮旁显示徽标 |
+
+## 更新
+
+从插件市场更新即可。完整机制、发版流程与验证命令见
+**[docs/UPDATE-FLOW.md](docs/UPDATE-FLOW.md)**。
+
+**一个前提**：必须用 `github:` 安装，`link:` 安装无法远程更新
+（市场对 `link:` 只报 `source: "linked"`、`latestVersion: null`）。
+仓库自带迁移脚本：
+
+```powershell
+node tools/switch-to-github.mjs            # 预演，不改动
+node tools/switch-to-github.mjs --apply    # 执行，自动备份
+```
+
+## 测试
+
+```powershell
+npm test
+```
+
+无需安装任何依赖——测试自己重建宿主的运行环境。
+当前 **167 项断言 / 8 套 / 0 失败**。
+
+> 其中 `test/revert-scope.mjs` 与 `test/f1-guard.mjs` 带**反向验证**：
+> 破坏修复机制时它们必须转红。只测"该拦住的拦住了"是不够的，
+> 还要测"不该拦的没拦住不了"。
 
 ## 二、位置与结构
 

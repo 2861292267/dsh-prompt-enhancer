@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # The suite has no dependencies: it stubs the host globals itself, so
+      # there is nothing to install and nothing to cache.
+      - name: Run tests
+        run: npm test
+
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The update check reports PACKAGE_VERSION, while package managers read
+      # package.json. If they drift, the plugin reports the wrong version to
+      # the market — so this is checked rather than trusted.
+      - name: package.json and PACKAGE_VERSION must agree
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          CONST=$(node -p "require('fs').readFileSync('lib/index.js','utf8').match(/PACKAGE_VERSION = '([^']+)'/)[1]")
+          echo "package.json=$PKG  lib/index.js=$CONST"
+          if [ "$PKG" != "$CONST" ]; then
+            echo "::error::version mismatch — bump both package.json and PACKAGE_VERSION"
+            exit 1
+          fi

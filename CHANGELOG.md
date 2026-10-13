@@ -3,6 +3,33 @@
 本项目记录了两轮质量审查加一次用户反馈后修复的 13 个真实缺陷。其中若干属于
 "代码和测试犯同一个错，所以一直全绿"的类型，保留细节是为了避免后人重走。
 
+## [1.2.1] - 2026-10-13
+
+### 文档与工程
+
+- 新增 **[docs/UPDATE-FLOW.md](docs/UPDATE-FLOW.md)**：完整更新机制说明。
+  包含为什么把更新交给市场而不是自己实现、`github:` 与 `link:` 的区别、
+  用户的两条更新路径与失败码解读、作者发版流程、以及每一环的可复现验证命令。
+- 新增 **GitHub Actions CI**：
+  - 在 Node 22 与 24 上跑全部测试；
+  - **校验 `package.json` 的 `version` 与 `lib/index.js` 的 `PACKAGE_VERSION`
+    一致**。二者漂移会让插件向市场报告错误的版本号，所以做成门禁而不是靠自觉。
+
+### 端到端验证（实测，非模拟）
+
+把依赖从 `link:` 切到 `github:` 后，完整链路已跑通：
+
+| 环节 | 证据 |
+|---|---|
+| 真正从 GitHub 下载 | `pnpm-lock.yaml` 的 `version:` 为 `https://codeload.github.com/.../tar.gz/743884d` |
+| 市场识别来源 | `"source": "github"`（切换前是 `"linked"`） |
+| 检测到新提交 | 推入 `1dc5c28` 后 `"updateAvailable": true`，`latest=1dc5c28` |
+| 市场汇总可见 | `updatable` 计数递增，该包出现在 `packages` 列表 |
+| 市场拒绝在错误时机更新 | 在 agent 回合内请求更新返回 `AGENTS_RUNNING`，`retryable: true` |
+
+最后一条是市场**正确行为**而非缺陷：更新会就地替换插件文件，
+运行中的 agent 可能读到半新半旧的文件，因此被稳妥拒绝。
+
 ## [1.2.0] - 2026-10-13
 
 ### 修复（用户反馈：撤销覆盖新输入）
