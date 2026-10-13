@@ -69,45 +69,69 @@ console.log('=== profile 里的配置段（原文）===')
 console.log('\n=== 解析出的 config ===')
 console.log(JSON.stringify(config, null, 2))
 
-// ---- 用真实配置驱动真实 apply() ----
-let statusBody
-const routes = []
-const fakeWebServer = {
-  register: (def) => {
-    routes.push(def.path)
-    if (def.path.endsWith('/status')) {
-      // 直接调用 handler，读真实响应
-      const res = {
-        writeHead() {},
-        end: (text) => { statusBody = text },
+/**
+ * Drive the real `apply()` with the real profile config.
+ *
+ * `Config` is a Standard Schema that KEEPS unknown keys, so the loader hands the
+ * resolved config back on later passes. This harness therefore runs `apply()`
+ * twice — once with the raw config, once with the config the first run produced —
+ * which is what actually exposed the idempotence bug this suite now guards.
+ */
+function runApply(rawConfig) {
+  let statusBody
+  const routes = []
+  const fakeWebServer = {
+    register: (def) => {
+      routes.push(def.path)
+      if (def.path.endsWith('/status')) {
+        const res = { writeHead() {}, end: (text) => { statusBody = text } }
+        def.handler({ method: 'GET', headers: {} }, res)
       }
-      def.handler({ method: 'GET', headers: {} }, res)
-    }
-    return () => {}
-  },
+      return () => {}
+    },
+  }
+  const ctx = {
+    effect: (fn) => fn(),
+    get: (n) => (n === 'webServer' ? fakeWebServer : undefined),
+    inject: () => {},
+  }
+  mod.apply(ctx, rawConfig)
+  return { routes, status: statusBody ? JSON.parse(statusBody) : null }
 }
 
-const ctx = {
-  effect: (fn) => fn(),
-  get: (n) => (n === 'webServer' ? fakeWebServer : undefined),
-  inject: () => {},
-}
-
-mod.apply(ctx, config)
+const first = runApply(config)
 await new Promise((r) => setTimeout(r, 50))
 
-console.log('\n=== 断言 ===')
-check('四条路由已挂载（status / enhance / update / config）', routes.length, 4)
-check('含 status 路由', routes.some((p) => p.endsWith('/status')), true)
-check('含 enhance 路由', routes.some((p) => p.endsWith('/enhance')), true)
-check('含 update 路由', routes.some((p) => p.endsWith('/update')), true)
-check('含 config 路由（设置面板用）', routes.some((p) => p.endsWith('/config')), true)
+console.log('\n=== 断言（首次 apply）===')
+check('四条路由已挂载（status / enhance / update / config）', first.routes.length, 4)
+check('含 status 路由', first.routes.some((p) => p.endsWith('/status')), true)
+check('含 enhance 路由', first.routes.some((p) => p.endsWith('/enhance')), true)
+check('含 update 路由', first.routes.some((p) => p.endsWith('/update')), true)
+check('含 config 路由（设置面板用）', first.routes.some((p) => p.endsWith('/config')), true)
 
-const status = JSON.parse(statusBody)
-check('自定义风格进入 styles', status.styles.includes('prd'), true)
-check('customStyles 标出它', status.customStyles, ['prd'])
-check('内置仍完整', status.styles.filter((s) => ['default', 'expand', 'concise', 'structured'].includes(s)).length, 4)
-check('defaultStyle 仍是 default', status.defaultStyle, 'default')
+check('自定义风格进入 styles', first.status.styles.includes('prd'), true)
+check('customStyles 标出它', first.status.customStyles, ['prd'])
+check('内置仍完整', first.status.styles.filter((s) => ['default', 'expand', 'concise', 'structured'].includes(s)).length, 4)
+check('defaultStyle 仍是 default', first.status.defaultStyle, 'default')
+
+/**
+ * The loader re-enters `apply()` with the config the previous run produced,
+ * because `Config` keeps unknown keys. What it hands back is the plugin's own
+ * normalized config object — specifically the resolved
+ * `{ table, ids, customIds }` under `styles`, not the id array `/status` reports.
+ *
+ * Feeding that straight back used to strip every custom style, because
+ * `resolveStyles` treated `table`/`ids`/`customIds` as three malformed style ids.
+ * This is the regression guard.
+ */
+console.log('\n=== 断言（把归一化产物再喂给 apply —— 真实装载路径）===')
+{
+  const resolvedStyles = mod.resolveStyles(config.styles)
+  const second = runApply({ ...config, styles: resolvedStyles })
+  check('二次 apply 后自定义风格仍在', second.status.customStyles, ['prd'])
+  check('二次 apply 后自定义风格仍在 styles 里', second.status.styles.includes('prd'), true)
+  check('二次 apply 后内置风格未受影响', second.status.styles.filter((s) => ['default', 'expand', 'concise', 'structured'].includes(s)).length, 4)
+}
 
 console.log('')
 console.log('RESULT: ' + pass + ' passed, ' + fail + ' failed')

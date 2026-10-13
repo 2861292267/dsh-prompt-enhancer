@@ -17,8 +17,13 @@
 #   provider      - provider route for the rewrite; set it explicitly, because
 #                   leaving it out sent provider=undefined and failed the call
 #   model         - model id for the rewrite; same reason
-#   defaultStyle  - default | expand | concise | structured  (default: default)
+#   defaultStyle  - default | expand | concise | structured, or a custom id
 #   slashCommand  - expose /enhance                          (default: true)
+#   styles        - custom style templates, `{ id: "instruction" }`. Ids must be
+#                   lowercase and may not shadow a built-in. They can also be
+#                   edited at runtime from Settings → 提示词锻造, which writes
+#                   ~/.dsh/dsh-prompt-forge.config.json; that file wins over the
+#                   values here (see docs/DIFFERENTIATORS.md).
 #
 # `defaultStyle: default` reproduces WorkBuddy's own behaviour with no extra
 # guidance appended to its instruction.
