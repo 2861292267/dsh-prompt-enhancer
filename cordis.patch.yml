@@ -35,7 +35,7 @@
     - id: prompt-enhancer
       name: '@local/dsh-prompt-forge'
       config:
-        provider: workbuddy-xdpool
-        model: deepseek-v4.1-flash
+        # provider / model 不写 —— 跟随会话默认模型。
+        # 想固定路由时再显式填写，它会覆盖会话默认。
         defaultStyle: default
         slashCommand: true
