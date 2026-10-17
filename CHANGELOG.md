@@ -3,6 +3,37 @@
 本项目记录了两轮质量审查加一次用户反馈后修复的 13 个真实缺陷。其中若干属于
 "代码和测试犯同一个错，所以一直全绿"的类型，保留细节是为了避免后人重走。
 
+## [1.5.0] - 2026-10-16
+
+### 变更：provider / model 改为跟随会话默认模型
+
+原先在配置里写死了 `provider: workbuddy-xdpool` / `model: deepseek-v4.1-flash`。
+
+**这是早期版本的绕行方案，活过了它要解决的问题**：当时读不到 `agentDefaultModel`
+服务，写死是唯一能避开 `no adapter registered for provider "undefined"` 的办法。
+但部署的默认 provider 后来换成了 `buddy`，写死的值就静默过期了，改写一直用旧的。
+
+现在的优先级（`lib/index.js` 的 `resolveRoute`）：
+
+| 顺位 | 来源 |
+|---|---|
+| 1 | 请求体里的 `provider` / `model` |
+| 2 | **`agentDefaultModel.currentSelection()`** —— 会话正在用的模型 |
+| 3 | 插件配置里的 `provider` / `model`（兜底 + 固定路由的出口） |
+| 4 | 任意已注册 provider（仅在以上全空时，避免路由完全 undefined） |
+
+每个字段**独立解析**，所以某一路来源只给出 provider 时，model 仍会从下一路取。
+
+### 修复：任意 provider 曾能盖掉配置
+
+`llm.listProviders()` 的兜底原先在 `currentAgentRoute` 链内，会返回一个「随便挑的」
+provider 并**赢过配置里正确的值**。已拆成独立的 `anyProviderRoute()`，
+只在会话与配置**都为空**时才调用。
+
+### 设置面板
+
+「模型服务 / 模型」两行现在显示**改写实际会用的路由**，并标注来源
+（`→ 跟随会话默认模型` / `→ 由插件配置固定`），而不是回显可能已过期的配置值。
 ## [1.4.2] - 2026-10-13
 
 ### 修复：profile 覆盖层配置被误删（人为事故）
